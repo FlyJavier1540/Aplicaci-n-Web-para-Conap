@@ -4,8 +4,7 @@ import jwt from 'jsonwebtoken';
 import { 
     ROL_MAP, 
     ESTADO_MAP 
-} from '../../utils/constants.js'; // Asumimos un archivo de constantes
-
+} from '../utils/constants.js';
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Lógica de autenticación

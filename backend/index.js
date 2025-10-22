@@ -4,7 +4,8 @@ import cors from 'cors';
 import { 
   testConnection 
 } from './db.js';
-import authRoutes from './src/routes/auth.routes.js'; // ⬅️ Importa las nuevas rutas
+import authRoutes from './src/routes/auth.routes.js';
+import usuariosRoutes from './src/routes/usuarios.routes.js'; // ⬅️ NUEVA IMPORTACIÓN
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,9 +23,10 @@ app.use(cors({
 testConnection();
 
 // ===============================================
-// CONEXIÓN DE RUTAS API
+// CONEXIÓN DE RUTAS API (CRÍTICO)
 // ===============================================
-app.use('/api/auth', authRoutes); // ⬅️ Usa las rutas de autenticación
+app.use('/api/auth', authRoutes); 
+app.use('/api/usuarios', usuariosRoutes); // ⬅️ CONEXIÓN DEL ENRUTADOR DE USUARIOS
 
 app.get('/api', (req, res) => {
   res.status(200).json({
@@ -36,5 +38,4 @@ app.get('/api', (req, res) => {
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor Express escuchando en http://localhost:${PORT}`);
-  console.log(`Endpoint de Login: POST http://localhost:${PORT}/api/auth/login`);
 });
