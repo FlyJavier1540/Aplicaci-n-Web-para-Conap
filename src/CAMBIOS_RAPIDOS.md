@@ -353,13 +353,51 @@ className="w-[95vw] sm:w-[90vw] sm:max-w-md p-4 sm:p-6"
   - Descripciones: `text-xs sm:text-sm truncate`
 - ✅ **Inputs responsive**: `h-10 sm:h-11` en todos los campos de texto
 
-### Botón de Cerrar (X) Optimizado
+### ❌ Botón X Eliminado de Todos los Formularios
 
-El botón X ahora es **sticky** y siempre visible:
-- ✅ Posición `sticky top-0` (no se pierde al hacer scroll)
-- ✅ Fondo `bg-background` con borde para mayor visibilidad
-- ✅ Tamaño fijo `h-8 w-8` (mejor tap target en móvil)
-- ✅ `z-10` para estar siempre visible sobre el contenido
+**ACTUALIZACIÓN IMPORTANTE**: Se eliminó el botón X de cierre en todos los Dialog
+
+**Razón**: 
+- Todos los formularios ya tienen un botón "Cancelar" claramente visible
+- Simplifica la interfaz y evita redundancia
+- Mejor UX: solo un método de cancelación consistente
+
+**Implementación**:
+```tsx
+// Archivo: /components/ui/dialog.tsx
+// Se eliminó el DialogPrimitive.Close del DialogContent
+// Ahora los formularios solo se cierran con el botón "Cancelar"
+```
+
+**Afecta a TODOS los formularios**:
+- ✅ Sin botón X redundante
+- ✅ Solo botón "Cancelar" en el footer de cada formulario
+- ✅ Interfaz más limpia y profesional
+
+### ❌ Selector de Área Protegida Eliminado del Formulario de Incidentes
+
+**Estado**: Eliminado a solicitud del usuario ✓
+
+El formulario de "Registro de Incidentes con Visitantes" **NO** incluye el selector de área protegida.
+
+**Comportamiento automático**:
+- ✅ Al crear un nuevo incidente, se asigna automáticamente el área protegida 'tikal'
+- ✅ El campo `areaProtegida` se guarda en la base de datos pero no es editable desde el formulario
+- ✅ Simplifica el formulario y reduce campos innecesarios para el usuario
+
+**Código implementado**:
+```tsx
+// En handleSubmit al crear nuevo incidente
+const nuevoIncidente: Incidente = {
+  // ... otros campos
+  areaProtegida: formData.areaProtegida || 'tikal', // Área protegida por defecto
+  // ... más campos
+};
+```
+
+**Razón del cambio**: 
+- Simplificar el proceso de reporte de incidentes
+- El área protegida puede determinarse automáticamente por el sistema
 
 ## 📱 Optimizaciones Móviles
 

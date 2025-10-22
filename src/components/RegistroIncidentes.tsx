@@ -380,6 +380,7 @@ export function RegistroIncidentes({ userPermissions = { canView: true, canCreat
         tipo: formData.tipo as any,
         gravedad: formData.gravedad as any,
         estado: 'Reportado',
+        areaProtegida: formData.areaProtegida || 'tikal', // Área protegida por defecto
         guardarecurso: currentGuardarecursoId || '1',
         fechaIncidente: new Date().toISOString(),
         fechaReporte: new Date().toISOString(),
@@ -1036,7 +1037,7 @@ export function RegistroIncidentes({ userPermissions = { canView: true, canCreat
                 <h3 className="font-semibold text-xs sm:text-sm md:text-base">Clasificación</h3>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 pl-0 sm:pl-9 md:pl-10">
+              <div className="grid grid-cols-1 gap-2 sm:gap-3 md:gap-4 pl-0 sm:pl-9 md:pl-10">
                 <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
                   <Label htmlFor="gravedad" className="text-xs sm:text-sm">Gravedad *</Label>
                   <Select value={formData.gravedad} onValueChange={(value) => setFormData({...formData, gravedad: value})}>
@@ -1048,22 +1049,6 @@ export function RegistroIncidentes({ userPermissions = { canView: true, canCreat
                       <SelectItem value="Moderado">Moderado</SelectItem>
                       <SelectItem value="Grave">Grave</SelectItem>
                       <SelectItem value="Crítico">Crítico</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
-                  <Label htmlFor="area" className="text-xs sm:text-sm">Área Protegida *</Label>
-                  <Select value={formData.areaProtegida} onValueChange={(value) => setFormData({...formData, areaProtegida: value})}>
-                    <SelectTrigger className="h-9 sm:h-10 md:h-11 text-xs sm:text-sm">
-                      <SelectValue placeholder="Seleccione área" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {areasProtegidas.map(area => (
-                        <SelectItem key={area.id} value={area.id}>
-                          {area.nombre}
-                        </SelectItem>
-                      ))}
                     </SelectContent>
                   </Select>
                 </div>

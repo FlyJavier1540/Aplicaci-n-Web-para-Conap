@@ -859,10 +859,6 @@
     margin-block: calc(var(--spacing) * 1);
   }
 
-  .-mt-2 {
-    margin-top: calc(var(--spacing) * -2);
-  }
-
   .mt-0\.5 {
     margin-top: calc(var(--spacing) * .5);
   }
@@ -885,10 +881,6 @@
 
   .mt-auto {
     margin-top: auto;
-  }
-
-  .-mr-2 {
-    margin-right: calc(var(--spacing) * -2);
   }
 
   .mr-1 {
@@ -1861,10 +1853,6 @@
     .border-blue-500\/20 {
       border-color: color-mix(in oklab, var(--color-blue-500) 20%, transparent);
     }
-  }
-
-  .border-border {
-    border-color: var(--border);
   }
 
   .border-emerald-300 {
@@ -5619,10 +5607,6 @@
 
   .data-\[state\=open\]\:text-accent-foreground[data-state="open"] {
     color: var(--accent-foreground);
-  }
-
-  .data-\[state\=open\]\:text-muted-foreground[data-state="open"] {
-    color: var(--muted-foreground);
   }
 
   .data-\[state\=open\]\:opacity-100[data-state="open"] {
