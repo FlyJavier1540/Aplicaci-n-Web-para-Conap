@@ -1,12 +1,16 @@
 // src/routes/usuarios.routes.js
 import { Router } from 'express';
-import { getAllUsuarios } from '../controllers/usuarios.controller.js'; // ⬅️ Importa la función
+import { 
+    getAllUsuarios,
+    createUsuario 
+} from '../controllers/usuarios.controller.js'; // ⬅️ Importa la nueva función
 
 const router = Router();
 
-// Endpoint: GET /api/usuarios
+// Endpoint: GET /api/usuarios (Listar todos)
 router.get('/', getAllUsuarios);
 
-// TODO: Implementar POST, PUT, DELETE en el siguiente paso
+// Endpoint: POST /api/usuarios (Crear nuevo usuario)
+router.post('/', createUsuario); // ⬅️ NUEVA RUTA CONECTADA
 
 export default router;

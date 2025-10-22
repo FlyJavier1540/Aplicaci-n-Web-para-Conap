@@ -37,5 +37,5 @@ app.get('/api', (req, res) => {
 
 // Iniciar el servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor Express escuchando en http://localhost:${PORT}`);
+  console.log(`Servidor Express escuchando en http://localhost:${PORT}`);
 });
