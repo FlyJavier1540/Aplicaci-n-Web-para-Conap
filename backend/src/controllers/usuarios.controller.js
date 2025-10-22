@@ -113,3 +113,101 @@ export const createUsuario = async (req, res) => {
         });
     }
 };
+
+
+/**
+ * 3. Actualiza la información de un usuario existente.
+ * Permite cambiar el rol, área y estado, pero NO la contraseña.
+ */
+export const updateUsuario = async (req, res) => {
+    const { id } = req.params;
+    const { 
+        usuario_nombre, 
+        usuario_apellido, 
+        usuario_dpi,
+        usuario_correo, 
+        usuario_telefono,
+        usuario_rol,
+        usuario_area,
+        usuario_estado
+    } = req.body;
+
+    try {
+        const result = await pool.query(`
+            UPDATE usuario
+            SET
+                usuario_nombre = $1,
+                usuario_apellido = $2,
+                usuario_dpi = $3,
+                usuario_correo = $4,
+                usuario_telefono = $5,
+                usuario_rol = $6,
+                usuario_area = $7,
+                usuario_estado = $8,
+                updated_at = NOW()
+            WHERE usuario_id = $9
+            RETURNING usuario_id
+        `, [
+            usuario_nombre,
+            usuario_apellido,
+            usuario_dpi,
+            usuario_correo,
+            usuario_telefono,
+            usuario_rol,
+            usuario_area,
+            usuario_estado,
+            id
+        ]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Usuario actualizado exitosamente',
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar usuario:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno al actualizar usuario' 
+        });
+    }
+};
+
+/**
+ * 4. Elimina (desactiva) un usuario, estableciendo su estado a INACTIVO.
+ * Usaremos el estado 2 (Inactivo) como eliminación lógica.
+ */
+export const deleteUsuario = async (req, res) => {
+    const { id } = req.params;
+    const INACTIVO_ID = 2; // Basado en tu catálogo de estados
+
+    try {
+        const result = await pool.query(`
+            UPDATE usuario
+            SET usuario_estado = $1, updated_at = NOW()
+            WHERE usuario_id = $2
+            RETURNING usuario_id
+        `, [INACTIVO_ID, id]); // Se actualiza el estado a Inactivo (ID 2)
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Usuario desactivado exitosamente (Eliminación lógica)'
+        });
+
+    } catch (error) {
+        console.error('Error al desactivar usuario:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno al desactivar usuario' 
+        });
+    }
+};
