@@ -11,7 +11,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Textarea } from './ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Plus, Edit, Search, AlertTriangle, FileText, Camera, MapPin, Clock, Eye, Shield, Calendar, CheckCircle, XCircle, AlertCircle, ListPlus, ArrowRight, ChevronDown, Upload, X, Image as ImageIcon, Tag, User, Activity, History } from 'lucide-react';
-import { guardarecursos, areasProtegidas } from '../data/mock-data';
 import { toast } from 'sonner@2.0.3';
 import { motion } from 'motion/react';
 import { format } from 'date-fns';

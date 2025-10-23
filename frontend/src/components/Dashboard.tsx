@@ -4,7 +4,6 @@ import { MapaAreasProtegidas } from './MapaAreasProtegidas';
 import { AreaProtegidaDetalle } from './AreaProtegidaDetalle';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { AreaProtegida } from '../types';
-import { areasProtegidas, guardarecursos, actividades, hallazgos, incidentesVisitantes } from '../data/mock-data';
 import { 
   Users, 
   Activity, 

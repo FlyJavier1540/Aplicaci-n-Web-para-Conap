@@ -5,7 +5,6 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Eye, EyeOff } from 'lucide-react';
-import { usuarios } from '../data/mock-data';
 import { ThemeToggle } from './ThemeToggle';
 import { RestablecerContrasena } from './RestablecerContrasena';
 import conapLogo from 'figma:asset/fdba91156d85a5c8ad358d0ec261b66438776557.png';

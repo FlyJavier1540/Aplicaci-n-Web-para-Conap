@@ -8,7 +8,6 @@ import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 import { Plus, Search, Camera, MapPin, Eye, Calendar, Download, Leaf, Bird, AlertTriangle, Package, FileText, Shield } from 'lucide-react';
-import { evidenciasFotograficas, guardarecursos, actividades } from '../data/mock-data';
 import { motion } from 'motion/react';
 
 interface EvidenciasFotograficasProps {

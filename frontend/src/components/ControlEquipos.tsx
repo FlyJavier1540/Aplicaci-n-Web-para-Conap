@@ -10,7 +10,6 @@ import { Textarea } from './ui/textarea';
 import { Plus, Edit, Search, Package, AlertTriangle, CheckCircle, Clock, Radio, Navigation, Eye, Camera, Car, Wrench, Box, Shield, XCircle, Tag, Hash, FileText, User, CheckCircle2, MoreVertical } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { equiposAsignados, guardarecursos } from '../data/mock-data';
 import { motion } from 'motion/react';
 
 interface ControlEquiposProps {

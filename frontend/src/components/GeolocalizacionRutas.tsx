@@ -7,7 +7,6 @@ import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Search, MapPin, Route, Navigation, Clock, Eye, Shield, TrendingUp, Calendar, Map, Compass } from 'lucide-react';
-import { guardarecursos, areasProtegidas } from '../data/mock-data';
 import { Actividad } from '../types';
 import { motion } from 'motion/react';
 import { format } from 'date-fns';

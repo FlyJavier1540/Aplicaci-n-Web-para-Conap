@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from './ui/textarea';
 import { Plus, MapPin, Edit, Search, Globe, Trees, Shield, Map, CheckCircle2, XCircle, TreePine } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
-import { areasProtegidas } from '../data/mock-data';
 import { AreaProtegida } from '../types';
 
 interface AsignacionZonasProps {

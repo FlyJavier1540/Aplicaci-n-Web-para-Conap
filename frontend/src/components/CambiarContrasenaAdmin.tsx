@@ -5,7 +5,6 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Lock, Eye, EyeOff, CheckCircle2, User, Shield } from 'lucide-react';
-import { usuarios } from '../data/mock-data';
 import { toast } from 'sonner@2.0.3';
 
 interface CambiarContrasenaAdminProps {
