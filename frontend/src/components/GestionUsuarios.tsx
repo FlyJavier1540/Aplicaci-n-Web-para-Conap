@@ -12,7 +12,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Alert, AlertDescription } from './ui/alert';
 import { Plus, Edit, Search, Users, Mail, Phone, CheckCircle2, Ban, UserX, User, Shield, UserCheck, Lock, Eye, EyeOff, Info, KeyRound, ChevronDown, IdCard, Briefcase } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
-import { CambiarContrasenaAdmin } from './CambiarContrasenaAdmin';
+import { useState, useEffect, useMemo } from 'react';
+import { usuariosService } from '../utils/services/ejemplo-api.service';
+
 
 interface Usuario {
   id: string;

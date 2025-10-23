@@ -9,6 +9,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { RestablecerContrasena } from './RestablecerContrasena';
 import conapLogo from 'figma:asset/fdba91156d85a5c8ad358d0ec261b66438776557.png';
 import { motion, AnimatePresence } from 'motion/react';
+import { authService } from '../utils/services/ejemplo-api.service';
 
 interface LoginProps {
   onLogin: (usuario: any) => void;
@@ -40,25 +41,27 @@ export function Login({ onLogin }: LoginProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // Simular delay de autenticación
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+        // 2. Llama al servicio API real
+        const usuario = await authService.login(email, password);
+        
+        // El servicio ya guardó el token y mapeó al usuario, solo llamamos al handler
+        onLogin(usuario); 
 
-    // Verificar credenciales
-    const usuario = usuarios.find(u => u.email === email);
-    
-    if (usuario && usuario.password === password) {
-      onLogin(usuario);
-    } else {
-      setError('Credenciales incorrectas. Intente nuevamente.');
+    } catch (err: any) {
+        // Muestra el error de autenticación (ej: Credenciales incorrectas)
+        const errorMessage = err.message || 'Error de conexión. Verifica la URL de la API.';
+        setError(errorMessage);
+
+    } finally {
+        setIsLoading(false);
     }
-    
-    setIsLoading(false);
-  };
+};
 
   return (
     <div className="login-container min-h-screen w-full relative overflow-hidden flex items-center justify-center px-4 sm:px-4 md:px-6">
