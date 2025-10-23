@@ -10,6 +10,7 @@ import { Textarea } from './ui/textarea';
 import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Plus, Edit, Search, Calendar as CalendarIcon, Clock, MapPin, Users, Shield, CheckCircle, AlertCircle, XCircle, Play, MoreVertical, Binoculars, Wrench, GraduationCap, Eye, Map, ChevronDown, Activity, User, FileText, Flame, TreePine, Sprout } from 'lucide-react';
+import { actividades, guardarecursos } from '../data/mock-data';
 import { Actividad } from '../types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';

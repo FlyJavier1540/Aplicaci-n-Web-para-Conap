@@ -8,6 +8,7 @@ import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 import { Search, Clock, MapPin, Camera, AlertTriangle, Activity, CheckCircle, Play, Calendar, X, Plus, Trash2, MapPinned, FileText, Image as ImageIcon, Pause, StopCircle, Binoculars, Wrench, GraduationCap, Eye, Map, Search as SearchIcon, Upload } from 'lucide-react';
+import { actividades, guardarecursos } from '../data/mock-data';
 import { motion, AnimatePresence } from 'motion/react';
 import { actividadesSync } from '../utils/actividadesSync';
 import { Hallazgo, EvidenciaFotografica } from '../types';

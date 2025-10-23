@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Plus, Download, Eye, Calendar as CalendarIcon, FileText, Users, Tag } from 'lucide-react';
+import { guardarecursos, areasProtegidas } from '../data/mock-data';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 

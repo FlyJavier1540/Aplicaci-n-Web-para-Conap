@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { CheckSquare, Clock, Activity, TrendingUp } from 'lucide-react';
-
+import { actividades, guardarecursos } from '../data/mock-data';
 
 interface MetricaCumplimiento {
   id: string;

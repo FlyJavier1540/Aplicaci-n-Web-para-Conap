@@ -11,10 +11,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { Alert, AlertDescription } from './ui/alert';
 import { Plus, Edit, Search, Users, Mail, Phone, CheckCircle2, Ban, UserX, User, Shield, UserCheck, Lock, Eye, EyeOff, Info, KeyRound, ChevronDown, IdCard, Briefcase } from 'lucide-react';
+import { usuarios } from '../data/mock-data';
 import { toast } from 'sonner@2.0.3';
-import { useState, useEffect, useMemo } from 'react';
-import { usuariosService } from '../utils/services/ejemplo-api.service';
-
+import { CambiarContrasenaAdmin } from './CambiarContrasenaAdmin';
 
 interface Usuario {
   id: string;

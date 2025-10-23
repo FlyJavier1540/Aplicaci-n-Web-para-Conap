@@ -10,6 +10,7 @@ import { Textarea } from './ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Plus, AlertTriangle, Users, MapPin, Eye, FileText, Clock, CheckCircle, AlertCircle, ListPlus, History, Search, Activity, TrendingUp, XCircle } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { guardarecursos, areasProtegidas } from '../data/mock-data';
 import { toast } from 'sonner@2.0.3';
 import { motion } from 'motion/react';
 import { format } from 'date-fns';

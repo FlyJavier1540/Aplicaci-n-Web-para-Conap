@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from './ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Plus, Edit, Search, Users, FileText, Mail, Phone, CheckCircle2, XCircle, Ban, UserX, User, IdCard, Briefcase, MapPin, Shield, Info, Lock, Eye, EyeOff, KeyRound, ChevronDown } from 'lucide-react';
+import { guardarecursos, areasProtegidas, usuarios } from '../data/mock-data';
 import { Guardarecurso, Usuario } from '../types';
 import { toast } from 'sonner@2.0.3';
 import { CambiarContrasenaAdmin } from './CambiarContrasenaAdmin';
