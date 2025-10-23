@@ -8,6 +8,10 @@ import authRoutes from './src/routes/auth.routes.js';
 import usuariosRoutes from './src/routes/usuarios.routes.js';
 import areasProtegidasRoutes from './src/routes/areasProtegidas.routes.js';
 import equiposRoutes from './src/routes/equipos.routes.js';
+import actividadesRoutes from './src/routes/actividades.routes.js';
+import incidentesRoutes from './src/routes/incidentes.routes.js';
+import hallazgoRoutes from './src/routes/hallazgo.routes.js';
+import catalogosRoutes from './src/routes/catalogos.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +35,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/areas-protegidas', areasProtegidasRoutes);
 app.use('/api/equipos', equiposRoutes);
+app.use('/api/actividades', actividadesRoutes);
+app.use('/api/incidentes', incidentesRoutes);
+app.use('/api/hallazgo', hallazgoRoutes);
+app.use('api/catalogos', catalogosRoutes);
 
 app.get('/api', (req, res) => {
   res.status(200).json({
