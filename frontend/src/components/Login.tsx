@@ -5,11 +5,11 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Eye, EyeOff } from 'lucide-react';
-import { usuarios } from '../data/mock-data';
 import { ThemeToggle } from './ThemeToggle';
 import { RestablecerContrasena } from './RestablecerContrasena';
 import conapLogo from 'figma:asset/fdba91156d85a5c8ad358d0ec261b66438776557.png';
 import { motion, AnimatePresence } from 'motion/react';
+import { authService } from '../utils/api';
 
 interface LoginProps {
   onLogin: (usuario: any) => void;
@@ -46,19 +46,25 @@ export function Login({ onLogin }: LoginProps) {
     setError('');
     setIsLoading(true);
 
-    // Simular delay de autenticación
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Verificar credenciales
-    const usuario = usuarios.find(u => u.email === email);
-    
-    if (usuario && usuario.password === password) {
-      onLogin(usuario);
-    } else {
-      setError('Credenciales incorrectas. Intente nuevamente.');
+    try {
+      // Llamar al servicio de autenticación
+      const response = await authService.login({ email, password });
+      
+      // Login exitoso - el token ya está guardado en localStorage
+      onLogin({
+        id: response.usuario.usuario_id,
+        nombre: response.usuario.usuario_nombre,
+        apellido: response.usuario.usuario_apellido,
+        email: response.usuario.usuario_correo,
+        rol: response.rol.rol_nombre,
+        area: response.area?.area_nombre,
+        ...response.usuario
+      });
+    } catch (error: any) {
+      setError(error.message || 'Credenciales incorrectas. Intente nuevamente.');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -7,15 +7,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Alert, AlertDescription } from './ui/alert';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+import { Alert, AlertDescription } from './ui/alert';
 import { Plus, Edit, Search, Users, FileText, Mail, Phone, CheckCircle2, XCircle, Ban, UserX, User, IdCard, Briefcase, MapPin, Shield, Info, Lock, Eye, EyeOff, KeyRound, ChevronDown } from 'lucide-react';
-import { guardarecursos, areasProtegidas, usuarios } from '../data/mock-data';
-import { Guardarecurso, Usuario } from '../types';
 import { toast } from 'sonner@2.0.3';
+import { usuariosService, areasProtegidasService } from '../utils/api'; 
+import { Usuario as UsuarioType, AreaProtegida } from '../types'; 
 import { CambiarContrasenaAdmin } from './CambiarContrasenaAdmin';
+
+// Extendemos el tipo base de Usuario para incluir campos necesarios aquí
+interface Guardarecurso extends UsuarioType {
+  areaAsignada: string;
+  cedula: string;
+  puesto: 'Jefe de Área' | 'Coordinador' | 'Guardarecurso Senior' | 'Guardarecurso' | 'Guardarecurso Auxiliar';
+  fechaIngreso: string;
+}
 
 interface RegistroGuardarecursosProps {
   userPermissions: {
@@ -28,9 +35,14 @@ interface RegistroGuardarecursosProps {
 }
 
 export function RegistroGuardarecursos({ userPermissions, currentUser }: RegistroGuardarecursosProps) {
-  const [guardarecursosList, setGuardarecursosList] = useState(guardarecursos);
+  // 1. Inicializar estados con arrays vacíos
+  const [guardarecursosList, setGuardarecursosList] = useState<Guardarecurso[]>([]);
+  const [areasProtegidasList, setAreasProtegidasList] = useState<AreaProtegida[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ... (El resto de hooks de estado) ...
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedArea, setSelectedArea] = useState<string>('');
+  const [selectedArea, setSelectedArea] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGuardarecurso, setEditingGuardarecurso] = useState<Guardarecurso | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -40,128 +52,139 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
   const [estadoPendiente, setEstadoPendiente] = useState<{ id: string; nuevoEstado: 'Activo' | 'Suspendido' | 'Desactivado'; nombre: string } | null>(null);
   
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    cedula: '',
-    telefono: '',
-    email: '',
-    password: '',
-    areaAsignada: '',
-    estado: 'Activo'
+    nombre: '', apellido: '', cedula: '', telefono: '', email: '', password: '', areaAsignada: '', estado: 'Activo'
   });
 
-  // Filtrar SOLO guardarecursos (excluir administradores y coordinadores)
-  const filteredGuardarecursos = guardarecursosList.filter(g => {
-    // Solo mostrar guardarecursos (excluir otros roles)
-    const usuarioAsociado = usuarios.find(u => u.email === g.email);
-    const isGuardarecurso = !usuarioAsociado || usuarioAsociado.rol === 'Guardarecurso';
-    
-    const matchesSearch = 
-      g.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      g.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      g.cedula.includes(searchTerm) ||
-      g.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesArea = !selectedArea || selectedArea === 'all' || g.areaAsignada === selectedArea;
-    
-    return isGuardarecurso && matchesSearch && matchesArea;
-  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // 2. Función de Carga de Datos desde la API
+  const loadData = async () => {
+    if (!userPermissions.canView) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // ⬅️ CARGA PARALELA DE USUARIOS Y ÁREAS PROTEGIDAS
+      const [fetchedUsuarios, fetchedAreas] = await Promise.all([
+        usuariosService.getAll(),
+        areasProtegidasService.getAll()
+      ]);
+      
+      // Filtra solo los Guardarecursos
+      const guardaRecursosData = fetchedUsuarios
+        .filter(u => u.rol === 'Guardarecurso')
+        .map(u => ({
+            ...u,
+            cedula: u.cedula || '', 
+            areaAsignada: u.areaAsignada || '',
+            puesto: u.rol === 'Jefe de Área' ? 'Jefe de Área' : 'Guardarecurso', // Lógica simple para el puesto
+            fechaIngreso: u.fechaCreacion
+        }));
+      
+      setGuardarecursosList(guardaRecursosData as Guardarecurso[]);
+      setAreasProtegidasList(fetchedAreas as AreaProtegida[]);
+
+    } catch (error: any) {
+      console.error('Error al cargar datos de guardarecursos:', error);
+      toast.error('Error de API', { description: error.message });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cargar datos al montar
+  useEffect(() => {
+    loadData();
+  }, [userPermissions.canView]); 
+
+
+  // 3. Lógica de Creación/Edición (Usa la API)
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingGuardarecurso) {
-      // Editar existente (sin tocar la contraseña ni el estado)
-      setGuardarecursosList(prev => prev.map(g => 
-        g.id === editingGuardarecurso.id 
-          ? { 
-              ...g, 
-              nombre: formData.nombre,
-              apellido: formData.apellido,
-              cedula: formData.cedula,
-              telefono: formData.telefono,
-              email: formData.email,
-              areaAsignada: formData.areaAsignada
-              // NO actualizar estado aquí - usar el botón específico
-            }
-          : g
-      ));
-      
-      // Actualizar también el usuario correspondiente (sin cambiar contraseña ni estado)
-      const usuarioIndex = usuarios.findIndex(u => u.email === editingGuardarecurso.email);
-      if (usuarioIndex !== -1) {
-        usuarios[usuarioIndex] = {
-          ...usuarios[usuarioIndex],
-          nombre: formData.nombre,
-          apellido: formData.apellido,
-          email: formData.email,
-          telefono: formData.telefono,
-          areaAsignada: formData.areaAsignada
-          // NO actualizar contraseña ni estado aquí - usar botones específicos
-        };
-      }
-      
-      toast.success('Guardarecurso actualizado', {
-        description: 'Los datos del guardarecurso han sido actualizados correctamente.'
-      });
-    } else {
-      // Crear nuevo guardarecurso (siempre con estado "Activo")
-      const newId = Date.now().toString();
-      const newGuardarecurso: Guardarecurso = {
-        id: newId,
+    // El rol siempre es Guardarecurso para este módulo
+    const userData: Partial<UsuarioType> = {
         nombre: formData.nombre,
         apellido: formData.apellido,
         cedula: formData.cedula,
         telefono: formData.telefono,
         email: formData.email,
-        password: formData.password,
-        puesto: 'Guardarecurso', // Asignar automáticamente
+        password: formData.password, 
+        rol: 'Guardarecurso', 
+        estado: 'Activo', 
         areaAsignada: formData.areaAsignada,
-        fechaIngreso: new Date().toISOString().split('T')[0],
-        estado: 'Activo', // Siempre se crea como Activo
-        zonaCobertura: [],
-        equiposAsignados: [],
-        actividades: []
-      };
-      setGuardarecursosList(prev => [...prev, newGuardarecurso]);
-      
-      // Crear automáticamente un usuario para el guardarecurso
-      const newUsuario: Usuario = {
-        id: newId, // Usar el mismo ID para mantener la relación
-        nombre: formData.nombre,
-        apellido: formData.apellido,
-        email: formData.email,
-        telefono: formData.telefono,
-        password: formData.password,
-        rol: 'Guardarecurso',
-        estado: 'Activo', // Siempre se crea como Activo
-        fechaCreacion: new Date().toISOString().split('T')[0],
-        ultimoAcceso: new Date().toISOString(),
-        permisos: ['guarda.view', 'guarda.create.incidentes', 'guarda.create.fotos'],
-        areaAsignada: formData.areaAsignada
-      };
-      usuarios.push(newUsuario);
-      
-      toast.success('Guardarecurso creado exitosamente', {
-        description: `Se ha creado el acceso al sistema para ${formData.nombre} ${formData.apellido} con la contraseña proporcionada.`
-      });
+    };
+
+    try {
+        if (editingGuardarecurso) {
+            // Edición: Actualizamos la información (sin tocar la contraseña)
+            await usuariosService.update(editingGuardarecurso.id, userData as UsuarioType);
+            toast.success('Guardarecurso actualizado', { description: 'Los datos han sido actualizados correctamente.' });
+        } else {
+            // Creación: Llama a POST /api/usuarios (backend maneja el hashing)
+            await usuariosService.create(userData as UsuarioType);
+            toast.success('Guardarecurso creado exitosamente', { description: `Se ha creado la cuenta para ${formData.nombre} ${formData.apellido}.` });
+        }
+        
+        resetForm();
+        setIsDialogOpen(false);
+        loadData(); // Vuelve a cargar la data desde la API
+
+    } catch (error: any) {
+        toast.error('Error de Operación', { description: error.message });
     }
-    
-    resetForm();
-    setIsDialogOpen(false);
   };
 
-  const resetForm = () => {
-    setFormData({
-      nombre: '',
-      apellido: '',
-      cedula: '',
-      telefono: '',
-      email: '',
-      password: '',
-      areaAsignada: '',
-      estado: 'Activo'
+  // 4. Lógica de Cambio de Estado (Usa la API)
+  const confirmarCambioEstado = async () => {
+    if (!estadoPendiente) return;
+
+    try {
+        if (estadoPendiente.nuevoEstado === 'Activo') {
+            await usuariosService.update(estadoPendiente.id, { estado: 'Activo' });
+        } else {
+            // Usa DELETE (eliminación lógica) para Desactivar/Suspender (Inactivo/Suspendido se mapea a INACTIVO en el backend)
+            await usuariosService.delete(estadoPendiente.id);
+        }
+        
+        const estadoTexto = estadoPendiente.nuevoEstado === 'Activo' ? 'activado' 
+          : estadoPendiente.nuevoEstado === 'Suspendido' ? 'suspendido' 
+          : 'desactivado';
+        
+        toast.success('Estado actualizado', {
+          description: `${estadoPendiente.nombre} ha sido ${estadoTexto}.`
+        });
+        
+        loadData(); // Recargar la lista
+    } catch (error: any) {
+        toast.error('Error de Operación', { description: error.message });
+    }
+    
+    setIsEstadoAlertOpen(false);
+    setEstadoPendiente(null);
+  };
+  
+  
+  // 5. Lógica de Filtrado (usa useMemo)
+  const filteredGuardarecursos = useMemo(() => {
+    return guardarecursosList.filter(g => {
+      const matchesSearch = 
+        g.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        g.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        g.cedula.includes(searchTerm) ||
+        g.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesArea = selectedArea === 'all' || g.areaAsignada === selectedArea;
+      
+      return matchesSearch && matchesArea;
     });
+  }, [guardarecursosList, searchTerm, selectedArea]);
+  
+  // 6. El resto de las funciones auxiliares (sin cambios)
+  const resetForm = () => {
+    setFormData({ nombre: '', apellido: '', cedula: '', telefono: '', email: '', password: '', areaAsignada: '', estado: 'Activo' });
     setEditingGuardarecurso(null);
   };
 
@@ -172,7 +195,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
       cedula: guardarecurso.cedula,
       telefono: guardarecurso.telefono,
       email: guardarecurso.email,
-      password: '', // Dejar vacío para no cambiar la contraseña
+      password: '', 
       areaAsignada: guardarecurso.areaAsignada,
       estado: guardarecurso.estado
     });
@@ -184,78 +207,25 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
     const guardarecurso = guardarecursosList.find(g => g.id === id);
     if (!guardarecurso) return;
 
-    // Si es el mismo estado, no hacer nada
     if (guardarecurso.estado === nuevoEstado) {
-      toast.info('Sin cambios', {
-        description: `El guardarecurso ya está en estado ${nuevoEstado}.`
-      });
+      toast.info('Sin cambios', { description: `El guardarecurso ya está en estado ${nuevoEstado}.` });
       return;
     }
 
-    // Guardar el estado pendiente y mostrar la alerta de confirmación
-    setEstadoPendiente({
-      id,
-      nuevoEstado,
-      nombre: `${guardarecurso.nombre} ${guardarecurso.apellido}`
-    });
+    setEstadoPendiente({ id, nuevoEstado, nombre: `${guardarecurso.nombre} ${guardarecurso.apellido}` });
     setIsEstadoAlertOpen(true);
   };
 
-  const confirmarCambioEstado = () => {
-    if (!estadoPendiente) return;
-
-    const { id, nuevoEstado, nombre } = estadoPendiente;
-
-    // Actualizar el guardarecurso
-    setGuardarecursosList(prev => prev.map(g => 
-      g.id === id ? { ...g, estado: nuevoEstado } : g
-    ));
-
-    // Actualizar también el usuario asociado
-    const guardarecurso = guardarecursosList.find(g => g.id === id);
-    if (guardarecurso) {
-      const usuarioIndex = usuarios.findIndex(u => u.email === guardarecurso.email);
-      if (usuarioIndex !== -1) {
-        usuarios[usuarioIndex] = {
-          ...usuarios[usuarioIndex],
-          estado: nuevoEstado as any
-        };
-      }
-    }
-
-    const mensajes = {
-      'Activo': 'activado',
-      'Suspendido': 'suspendido',
-      'Desactivado': 'desactivado'
-    };
-
-    toast.success('Estado actualizado', {
-      description: `${nombre} ha sido ${mensajes[nuevoEstado]}.`
-    });
-
-    // Limpiar y cerrar
-    setIsEstadoAlertOpen(false);
-    setEstadoPendiente(null);
-  };
-
   const handleChangePassword = (guardarecurso: Guardarecurso) => {
-    // Buscar el usuario asociado al guardarecurso
-    const usuario = usuarios.find(u => u.email === guardarecurso.email);
-    if (usuario) {
-      setGuardarecursoToChangePassword(usuario);
-      setIsPasswordDialogOpen(true);
-    } else {
-      toast.error('Error', {
-        description: 'No se encontró el usuario asociado a este guardarecurso.'
-      });
-    }
+    setGuardarecursoToChangePassword(guardarecurso);
+    setIsPasswordDialogOpen(true);
   };
 
   const canChangePassword = () => {
     if (!currentUser) return false;
-    // Administradores y Coordinadores pueden cambiar contraseñas de guardarecursos
     return currentUser.rol === 'Administrador' || currentUser.rol === 'Coordinador';
   };
+
 
   const getEstadoBadgeClass = (estado: string) => {
     switch (estado) {
@@ -264,24 +234,34 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
       case 'Suspendido': 
         return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-300 dark:border-orange-700';
       case 'Desactivado': 
+      case 'Inactivo':
         return 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-300 dark:border-gray-700';
       default: 
         return 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-300 dark:border-gray-700';
     }
   };
 
-  // Estadísticas solo de guardarecursos (excluir administradores y coordinadores)
-  const soloGuardarecursos = guardarecursosList.filter(g => {
-    const usuarioAsociado = usuarios.find(u => u.email === g.email);
-    return !usuarioAsociado || usuarioAsociado.rol === 'Guardarecurso';
-  });
-  
-  const estadisticas = {
-    total: soloGuardarecursos.length,
-    activos: soloGuardarecursos.filter(g => g.estado === 'Activo').length,
-    suspendidos: soloGuardarecursos.filter(g => g.estado === 'Suspendido').length,
-    desactivados: soloGuardarecursos.filter(g => g.estado === 'Desactivado').length
-  };
+
+  const estadisticas = useMemo(() => {
+    const soloGuardarecursos = guardarecursosList.filter(g => g.rol === 'Guardarecurso');
+    
+    return {
+      total: soloGuardarecursos.length,
+      activos: soloGuardarecursos.filter(g => g.estado === 'Activo').length,
+      suspendidos: soloGuardarecursos.filter(g => g.estado === 'Suspendido').length,
+      desactivados: soloGuardarecursos.filter(g => g.estado === 'Inactivo' || g.estado === 'Desactivado').length
+    };
+  }, [guardarecursosList]);
+
+
+  if (isLoading) {
+    return (
+        <div className="flex items-center justify-center h-96">
+            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <p className="text-muted-foreground ml-4">Cargando lista de guardarecursos...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -325,7 +305,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas las áreas</SelectItem>
-                  {areasProtegidas.map(area => (
+                  {areasProtegidasList.map(area => (
                     <SelectItem key={area.id} value={area.id}>
                       {area.nombre}
                     </SelectItem>
@@ -337,7 +317,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
         </CardContent>
       </Card>
 
-      {/* Dialog separado del Card */}
+      {/* Dialog para crear/editar */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="w-[95vw] sm:w-[90vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
             <DialogHeader className="pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -357,12 +337,11 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 pt-3 sm:pt-4">
-              {/* Alerta informativa sobre creación automática de acceso */}
               {!editingGuardarecurso && (
                 <Alert className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
                   <Info className="h-4 w-4 text-green-600 dark:text-green-400" />
                   <AlertDescription className="text-green-800 dark:text-green-300 text-xs sm:text-sm">
-                    El guardarecurso podrá iniciar sesión y ver únicamente su información personal sin filtros ni opciones de edición.
+                    El guardarecurso podrá iniciar sesión y ver únicamente su información personal.
                   </AlertDescription>
                 </Alert>
               )}
@@ -438,7 +417,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                     />
                   </div>
                   
-                  {/* Solo mostrar campo de contraseña al CREAR, no al EDITAR */}
+                  {/* Solo mostrar campo de contraseña al CREAR */}
                   {!editingGuardarecurso && (
                     <div className="space-y-1.5 sm:space-y-2 sm:col-span-2">
                       <Label htmlFor="password" className="text-sm">Contraseña *</Label>
@@ -486,7 +465,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                         <SelectValue placeholder="Seleccione área" />
                       </SelectTrigger>
                       <SelectContent>
-                        {areasProtegidas.map(area => (
+                        {areasProtegidasList.map(area => (
                           <SelectItem key={area.id} value={area.id}>
                             {area.nombre}
                           </SelectItem>
@@ -530,6 +509,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
 
       {/* Estadísticas responsive: arriba en móvil/tablet, sidebar en desktop */}
       <div className="lg:hidden mb-4">
+        {/* ... (código de estadísticas) ... */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           <Card className="border-0 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40 shadow-md">
             <CardContent className="p-3 sm:p-4">
@@ -537,7 +517,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                 <Users className="h-7 w-7 sm:h-9 sm:w-9 text-blue-700 dark:text-blue-300" />
                 <div className="text-center">
                   <p className="text-2xl sm:text-3xl text-blue-800 dark:text-blue-200 mb-0.5 sm:mb-1">{estadisticas.total}</p>
-                  <p className="text-xs text-blue-700/80 dark:text-blue-300/80">Total</p>
+                  <p className="text-xs text-blue-700/80 dark:text-blue-300/80">Total Personal</p>
                 </div>
               </div>
             </CardContent>
@@ -551,8 +531,8 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                   <p className="text-2xl sm:text-3xl text-green-800 dark:text-green-200 mb-0.5 sm:mb-1">{estadisticas.activos}</p>
                   <p className="text-xs text-green-700/80 dark:text-green-300/80">Activos</p>
                 </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            </Card>
           </Card>
           
           <Card className="border-0 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/40 dark:to-orange-800/40 shadow-md">
@@ -563,8 +543,8 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                   <p className="text-2xl sm:text-3xl text-orange-800 dark:text-orange-200 mb-0.5 sm:mb-1">{estadisticas.suspendidos}</p>
                   <p className="text-xs text-orange-700/80 dark:text-orange-300/80">Suspendidos</p>
                 </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            </Card>
           </Card>
           
           <Card className="border-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/40 dark:to-gray-700/40 shadow-md">
@@ -575,8 +555,8 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                   <p className="text-2xl sm:text-3xl text-gray-800 dark:text-gray-200 mb-0.5 sm:mb-1">{estadisticas.desactivados}</p>
                   <p className="text-xs text-gray-700/80 dark:text-gray-300/80">Desactivados</p>
                 </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            </Card>
           </Card>
         </div>
       </div>
@@ -614,7 +594,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                   </TableHeader>
                   <TableBody>
                     {filteredGuardarecursos.map((guardarecurso) => {
-                      const area = areasProtegidas.find(a => a.id === guardarecurso.areaAsignada);
+                      const area = areasProtegidasList.find(a => a.id === guardarecurso.areaAsignada);
                       return (
                         <TableRow key={guardarecurso.id}>
                           {/* Siempre visible - Nombre */}
@@ -657,7 +637,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                           
                           {/* Visible desde XL - Fecha */}
                           <TableCell className="hidden xl:table-cell whitespace-nowrap">
-                            {guardarecurso.fechaIngreso}
+                            {guardarecurso.fechaCreacion}
                           </TableCell>
                           
                           {/* Siempre visible - Acciones */}
@@ -674,65 +654,69 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                                   <KeyRound className="h-4 w-4" />
                                 </Button>
                               )}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEdit(guardarecurso)}
-                                title="Editar información"
-                                className="flex-shrink-0"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
+                              {userPermissions.canEdit && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEdit(guardarecurso)}
+                                  title="Editar información"
+                                  className="flex-shrink-0"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
                               
                               {/* Dropdown para cambiar estado */}
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    title={`Cambiar estado (actual: ${guardarecurso.estado})`}
-                                    className={`flex-shrink-0 ${
-                                      guardarecurso.estado === 'Activo' 
-                                        ? 'border-green-300 hover:border-green-400 text-green-600 hover:text-green-700' 
-                                        : guardarecurso.estado === 'Suspendido'
-                                        ? 'border-orange-300 hover:border-orange-400 text-orange-600 hover:text-orange-700'
-                                        : 'border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700'
-                                    }`}
-                                  >
-                                    {guardarecurso.estado === 'Activo' ? (
-                                      <CheckCircle2 className="h-4 w-4" />
-                                    ) : guardarecurso.estado === 'Suspendido' ? (
-                                      <Ban className="h-4 w-4" />
-                                    ) : (
-                                      <UserX className="h-4 w-4" />
-                                    )}
-                                    <ChevronDown className="h-3 w-3 ml-1" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem 
-                                    onClick={() => handleEstadoClick(guardarecurso.id, 'Activo')}
-                                    className="cursor-pointer"
-                                  >
-                                    <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" />
-                                    Activo
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleEstadoClick(guardarecurso.id, 'Suspendido')}
-                                    className="cursor-pointer"
-                                  >
-                                    <Ban className="h-4 w-4 mr-2 text-orange-500" />
-                                    Suspendido
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleEstadoClick(guardarecurso.id, 'Desactivado')}
-                                    className="cursor-pointer"
-                                  >
-                                    <UserX className="h-4 w-4 mr-2 text-gray-500" />
-                                    Desactivado
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              {userPermissions.canEdit && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      title={`Cambiar estado (actual: ${guardarecurso.estado})`}
+                                      className={`flex-shrink-0 ${
+                                        guardarecurso.estado === 'Activo' 
+                                          ? 'border-green-300 hover:border-green-400 text-green-600 hover:text-green-700' 
+                                          : guardarecurso.estado === 'Suspendido'
+                                          ? 'border-orange-300 hover:border-orange-400 text-orange-600 hover:text-orange-700'
+                                          : 'border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700'
+                                      }`}
+                                    >
+                                      {guardarecurso.estado === 'Activo' ? (
+                                        <CheckCircle2 className="h-4 w-4" />
+                                      ) : guardarecurso.estado === 'Suspendido' ? (
+                                        <Ban className="h-4 w-4" />
+                                      ) : (
+                                        <UserX className="h-4 w-4" />
+                                      )}
+                                      <ChevronDown className="h-3 w-3 ml-1" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem 
+                                      onClick={() => handleEstadoClick(guardarecurso.id, 'Activo')}
+                                      className="cursor-pointer"
+                                    >
+                                      <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" />
+                                      Activo
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => handleEstadoClick(guardarecurso.id, 'Suspendido')}
+                                      className="cursor-pointer"
+                                    >
+                                      <Ban className="h-4 w-4 mr-2 text-orange-500" />
+                                      Suspendido
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => handleEstadoClick(guardarecurso.id, 'Inactivo')}
+                                      className="cursor-pointer"
+                                    >
+                                      <UserX className="h-4 w-4 mr-2 text-gray-500" />
+                                      Desactivado
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -752,9 +736,9 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
           </Card>
         </div>
 
-        {/* Columna derecha: Estadísticas (solo visible en desktop LG+) */}
+        {/* Columna derecha: Estadísticas (solo desktop) */}
         <div className="hidden lg:block lg:col-span-1">
-          <div className="sticky top-24 grid grid-cols-1 gap-2">
+          <div className="sticky top-24 space-y-3">
             <Card className="border-0 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40 shadow-md">
               <CardContent className="p-4">
                 <div className="flex flex-col items-center justify-center gap-2">
@@ -770,7 +754,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
             <Card className="border-0 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-800/40 shadow-md">
               <CardContent className="p-4">
                 <div className="flex flex-col items-center justify-center gap-2">
-                  <CheckCircle2 className="h-10 w-10 text-green-700 dark:text-green-300" />
+                  <CheckCircle2 className="h-9 w-9 text-green-700 dark:text-green-300" />
                   <div className="text-center">
                     <p className="text-3xl text-green-800 dark:text-green-200 mb-1">{estadisticas.activos}</p>
                     <p className="text-xs text-green-700/80 dark:text-green-300/80">Activos</p>
@@ -782,7 +766,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
             <Card className="border-0 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/40 dark:to-orange-800/40 shadow-md">
               <CardContent className="p-4">
                 <div className="flex flex-col items-center justify-center gap-2">
-                  <Ban className="h-10 w-10 text-orange-700 dark:text-orange-300" />
+                  <Ban className="h-9 w-9 text-orange-700 dark:text-orange-300" />
                   <div className="text-center">
                     <p className="text-3xl text-orange-800 dark:text-orange-200 mb-1">{estadisticas.suspendidos}</p>
                     <p className="text-xs text-orange-700/80 dark:text-orange-300/80">Suspendidos</p>
@@ -794,7 +778,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
             <Card className="border-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/40 dark:to-gray-700/40 shadow-md">
               <CardContent className="p-4">
                 <div className="flex flex-col items-center justify-center gap-2">
-                  <UserX className="h-10 w-10 text-gray-700 dark:text-gray-300" />
+                  <UserX className="h-9 w-9 text-gray-700 dark:text-gray-300" />
                   <div className="text-center">
                     <p className="text-3xl text-gray-800 dark:text-gray-200 mb-1">{estadisticas.desactivados}</p>
                     <p className="text-xs text-gray-700/80 dark:text-gray-300/80">Desactivados</p>
@@ -806,7 +790,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
         </div>
       </div>
 
-      {/* Diálogo para cambiar contraseña de guardarecurso */}
+      {/* Diálogo para cambiar contraseña de otro usuario */}
       {currentUser && guardarecursoToChangePassword && (
         <CambiarContrasenaAdmin
           isOpen={isPasswordDialogOpen}
@@ -830,29 +814,41 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                   <>
                     <p className="mb-3">
                       Está a punto de cambiar el estado de <strong>{estadoPendiente.nombre}</strong> a{' '}
-                      <strong className={
+                      <span className={
                         estadoPendiente.nuevoEstado === 'Activo' 
-                          ? 'text-green-600 dark:text-green-400' 
+                          ? 'text-green-600 dark:text-green-400 font-semibold' 
                           : estadoPendiente.nuevoEstado === 'Suspendido'
-                          ? 'text-orange-600 dark:text-orange-400'
-                          : 'text-gray-600 dark:text-gray-400'
+                          ? 'text-orange-600 dark:text-orange-400 font-semibold'
+                          : 'text-gray-600 dark:text-gray-400 font-semibold'
                       }>
                         {estadoPendiente.nuevoEstado}
-                      </strong>.
+                      </span>.
                     </p>
-                    <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-sm">
-                        {estadoPendiente.nuevoEstado === 'Activo' && (
-                          <>✓ El guardarecurso podrá acceder al sistema normalmente.</>
-                        )}
-                        {estadoPendiente.nuevoEstado === 'Suspendido' && (
-                          <>⚠️ El guardarecurso tendrá acceso limitado al sistema.</>
-                        )}
-                        {estadoPendiente.nuevoEstado === 'Desactivado' && (
-                          <>✗ El guardarecurso NO podrá acceder al sistema.</>
-                        )}
-                      </p>
-                    </div>
+                    
+                    {estadoPendiente.nuevoEstado === 'Suspendido' && (
+                      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 mb-2">
+                        <p className="text-sm text-orange-800 dark:text-orange-200">
+                          <strong>⚠️ Suspensión:</strong> El usuario no podrá acceder al sistema temporalmente.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {estadoPendiente.nuevoEstado === 'Inactivo' && (
+                      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-2">
+                        <p className="text-sm text-gray-800 dark:text-gray-200">
+                          <strong>ℹ️ Desactivación:</strong> El usuario será marcado como inactivo en el sistema.
+                          (El backend lo mapea a 'Inactivo').
+                        </p>
+                      </div>
+                    )}
+                    
+                    {estadoPendiente.nuevoEstado === 'Activo' && (
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-2">
+                        <p className="text-sm text-green-800 dark:text-green-200">
+                          <strong>✓ Activación:</strong> El usuario podrá acceder al sistema normalmente.
+                        </p>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -875,7 +871,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
                   : 'bg-gray-600 hover:bg-gray-700'
               }
             >
-              Confirmar Cambio
+              Confirmar cambio
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

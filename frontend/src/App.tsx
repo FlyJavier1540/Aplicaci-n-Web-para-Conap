@@ -46,7 +46,7 @@ const ReporteHallazgos = lazy(() => import('./components/ReporteHallazgos').then
 const SeguimientoCumplimiento = lazy(() => import('./components/SeguimientoCumplimiento').then(m => ({ default: m.SeguimientoCumplimiento })));
 const RegistroIncidentes = lazy(() => import('./components/RegistroIncidentes').then(m => ({ default: m.RegistroIncidentes })));
 const ReportesPeriodicos = lazy(() => import('./components/ReportesPeriodicos').then(m => ({ default: m.ReportesPeriodicos })));
-const GestionUsuarios = lazy(() => import('./components/GestionUsuarios').then(m => ({ default: m.GestionUsuarios })));
+const GestionUsuarios = lazy(() => import('./components/GestionUsuariosAPI').then(m => ({ default: m.GestionUsuariosAPI })));
 
 /**
  * =============================================

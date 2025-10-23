@@ -16,7 +16,7 @@ import fotografiaRoutes from './src/routes/fotografia.routes.js';
 import seguimientoRoutes from './src/routes/seguimiento.routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 app.use(express.json());
 
