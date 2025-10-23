@@ -5,7 +5,9 @@ import {
   testConnection 
 } from './db.js';
 import authRoutes from './src/routes/auth.routes.js';
-import usuariosRoutes from './src/routes/usuarios.routes.js'; // ⬅️ NUEVA IMPORTACIÓN
+import usuariosRoutes from './src/routes/usuarios.routes.js';
+import areasProtegidasRoutes from './src/routes/areasProtegidas.routes.js';
+import equiposRoutes from './src/routes/equipos.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,7 +28,9 @@ testConnection();
 // CONEXIÓN DE RUTAS API (CRÍTICO)
 // ===============================================
 app.use('/api/auth', authRoutes); 
-app.use('/api/usuarios', usuariosRoutes); // ⬅️ CONEXIÓN DEL ENRUTADOR DE USUARIOS
+app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/areas-protegidas', areasProtegidasRoutes);
+app.use('/api/equipos', equiposRoutes);
 
 app.get('/api', (req, res) => {
   res.status(200).json({
