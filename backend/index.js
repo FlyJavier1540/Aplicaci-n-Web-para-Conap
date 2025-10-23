@@ -12,6 +12,8 @@ import actividadesRoutes from './src/routes/actividades.routes.js';
 import incidentesRoutes from './src/routes/incidentes.routes.js';
 import hallazgoRoutes from './src/routes/hallazgo.routes.js';
 import catalogosRoutes from './src/routes/catalogos.routes.js';
+import fotografiaRoutes from './src/routes/fotografia.routes.js';
+import seguimientoRoutes from './src/routes/seguimiento.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +41,8 @@ app.use('/api/actividades', actividadesRoutes);
 app.use('/api/incidentes', incidentesRoutes);
 app.use('/api/hallazgo', hallazgoRoutes);
 app.use('api/catalogos', catalogosRoutes);
+app.use('/api/fotografia', fotografiaRoutes);
+app.use('/api/seguimiento', seguimientoRoutes);
 
 app.get('/api', (req, res) => {
   res.status(200).json({
