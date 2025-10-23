@@ -1,5 +1,6 @@
 // src/routes/equipos.routes.js
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 import { 
     getAllEquipos,
     createEquipo,
@@ -8,6 +9,8 @@ import {
 } from '../controllers/equipos.controller.js'; 
 
 const router = Router();
+
+router.use(authenticateToken);
 
 // GET /api/equipos - Listar todos
 router.get('/', getAllEquipos);

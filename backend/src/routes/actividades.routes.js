@@ -1,5 +1,6 @@
 // src/routes/actividades.routes.js
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 import { 
     getAllActividades,
     createActividad,
@@ -8,6 +9,8 @@ import {
 } from '../controllers/actividades.controller.js'; 
 
 const router = Router();
+
+router.use(authenticateToken);
 
 // GET /api/actividades - Listar todas
 router.get('/', getAllActividades);

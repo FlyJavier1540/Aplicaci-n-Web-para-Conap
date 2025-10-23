@@ -1,5 +1,6 @@
 // src/routes/incidentes.routes.js
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 import { 
     getAllIncidentes,
     createIncidente,
@@ -8,6 +9,8 @@ import {
 } from '../controllers/incidentes.controller.js'; 
 
 const router = Router();
+
+router.use(authenticateToken);
 
 // GET /api/incidentes - Listar todos
 router.get('/', getAllIncidentes);

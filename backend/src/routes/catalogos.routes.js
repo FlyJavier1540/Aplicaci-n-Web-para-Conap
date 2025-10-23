@@ -1,5 +1,6 @@
 // src/routes/catalogos.routes.js
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 import { 
     getRoles,
     getEstados,
@@ -8,6 +9,8 @@ import {
 } from '../controllers/catalogos.controller.js'; 
 
 const router = Router();
+
+router.use(authenticateToken);
 
 // Endpoint: /api/catalogos/roles
 router.get('/roles', getRoles);

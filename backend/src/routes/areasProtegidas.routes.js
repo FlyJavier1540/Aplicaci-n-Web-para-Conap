@@ -1,5 +1,6 @@
 // src/routes/areasProtegidas.routes.js
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 import { 
     getAllAreasProtegidas,
     createAreaProtegida,
@@ -8,6 +9,8 @@ import {
 } from '../controllers/areasProtegidas.controller.js'; 
 
 const router = Router();
+
+router.use(authenticateToken);
 
 // GET /api/areas-protegidas - Listar todas
 router.get('/', getAllAreasProtegidas);

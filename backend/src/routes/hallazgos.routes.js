@@ -1,5 +1,6 @@
 // src/routes/hallazgos.routes.js
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 import { 
     getAllHallazgos,
     createHallazgo,
@@ -8,6 +9,8 @@ import {
 } from '../controllers/hallazgos.controller.js'; 
 
 const router = Router();
+
+router.use(authenticateToken);
 
 // GET /api/hallazgos - Listar todos
 router.get('/', getAllHallazgos);

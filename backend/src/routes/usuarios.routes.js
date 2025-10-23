@@ -1,5 +1,6 @@
 // src/routes/usuarios.routes.js (Actualizado)
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 import { 
     getAllUsuarios,
     createUsuario,
@@ -8,6 +9,8 @@ import {
 } from '../controllers/usuarios.controller.js'; 
 
 const router = Router();
+
+router.use(authenticateToken);
 
 // Endpoint: GET /api/usuarios (Listar todos)
 router.get('/', getAllUsuarios);
