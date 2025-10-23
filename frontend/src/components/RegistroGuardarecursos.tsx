@@ -12,6 +12,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Alert, AlertDescription } from './ui/alert';
 import { Plus, Edit, Search, Users, FileText, Mail, Phone, CheckCircle2, XCircle, Ban, UserX, User, IdCard, Briefcase, MapPin, Shield, Info, Lock, Eye, EyeOff, KeyRound, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
+
+// ⬅️ Importamos los servicios modulares
 import { usuariosService, areasProtegidasService } from '../utils/api'; 
 import { Usuario as UsuarioType, AreaProtegida } from '../types'; 
 import { CambiarContrasenaAdmin } from './CambiarContrasenaAdmin';
@@ -72,14 +74,14 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
         areasProtegidasService.getAll()
       ]);
       
-      // Filtra solo los Guardarecursos
+      // Filtra solo los Guardarecursos (rol === 'Guardarecurso')
       const guardaRecursosData = fetchedUsuarios
         .filter(u => u.rol === 'Guardarecurso')
         .map(u => ({
             ...u,
             cedula: u.cedula || '', 
             areaAsignada: u.areaAsignada || '',
-            puesto: u.rol === 'Jefe de Área' ? 'Jefe de Área' : 'Guardarecurso', // Lógica simple para el puesto
+            puesto: 'Guardarecurso', // El backend no devuelve puesto, se asigna un valor por defecto
             fechaIngreso: u.fechaCreacion
         }));
       
@@ -104,7 +106,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // El rol siempre es Guardarecurso para este módulo
+    // Crear un objeto base con los datos del formulario (el servicio mapea a DB)
     const userData: Partial<UsuarioType> = {
         nombre: formData.nombre,
         apellido: formData.apellido,
@@ -145,7 +147,7 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
         if (estadoPendiente.nuevoEstado === 'Activo') {
             await usuariosService.update(estadoPendiente.id, { estado: 'Activo' });
         } else {
-            // Usa DELETE (eliminación lógica) para Desactivar/Suspender (Inactivo/Suspendido se mapea a INACTIVO en el backend)
+            // Usa DELETE (eliminación lógica) para Desactivar/Suspender 
             await usuariosService.delete(estadoPendiente.id);
         }
         
@@ -515,49 +517,47 @@ export function RegistroGuardarecursos({ userPermissions, currentUser }: Registr
             <CardContent className="p-3 sm:p-4">
               <div className="flex flex-col items-center justify-center gap-1.5 sm:gap-2">
                 <Users className="h-7 w-7 sm:h-9 sm:w-9 text-blue-700 dark:text-blue-300" />
-                <div className="text-center">
-                  <p className="text-2xl sm:text-3xl text-blue-800 dark:text-blue-200 mb-0.5 sm:mb-1">{estadisticas.total}</p>
-                  <p className="text-xs text-blue-700/80 dark:text-blue-300/80">Total Personal</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-0 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-800/40 shadow-md">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex flex-col items-center justify-center gap-1.5 sm:gap-2">
-                <CheckCircle2 className="h-7 w-7 sm:h-9 sm:w-9 text-green-700 dark:text-green-300" />
-                <div className="text-center">
-                  <p className="text-2xl sm:text-3xl text-green-800 dark:text-green-200 mb-0.5 sm:mb-1">{estadisticas.activos}</p>
-                  <p className="text-xs text-green-700/80 dark:text-green-300/80">Activos</p>
+                <p className="text-2xl sm:text-3xl text-blue-800 dark:text-blue-200">{estadisticas.total}</p>
+                <p className="text-xs text-blue-700/80 dark:text-blue-300/80">Total Personal</p>
                 </div>
               </CardContent>
             </Card>
-          </Card>
           
-          <Card className="border-0 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/40 dark:to-orange-800/40 shadow-md">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex flex-col items-center justify-center gap-1.5 sm:gap-2">
-                <Ban className="h-7 w-7 sm:h-9 sm:w-9 text-orange-700 dark:text-orange-300" />
-                <div className="text-center">
-                  <p className="text-2xl sm:text-3xl text-orange-800 dark:text-orange-200 mb-0.5 sm:mb-1">{estadisticas.suspendidos}</p>
-                  <p className="text-xs text-orange-700/80 dark:text-orange-300/80">Suspendidos</p>
+            <Card className="border-0 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-800/40 shadow-md">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col items-center justify-center gap-1.5 sm:gap-2">
+                  <CheckCircle2 className="h-7 w-7 sm:h-9 sm:w-9 text-green-700 dark:text-green-300" />
+                  <div className="text-center">
+                    <p className="text-2xl sm:text-3xl text-green-800 dark:text-green-200 mb-0.5 sm:mb-1">{estadisticas.activos}</p>
+                    <p className="text-xs text-green-700/80 dark:text-green-300/80">Activos</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </Card>
           
-          <Card className="border-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/40 dark:to-gray-700/40 shadow-md">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex flex-col items-center justify-center gap-1.5 sm:gap-2">
-                <UserX className="h-7 w-7 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300" />
-                <div className="text-center">
-                  <p className="text-2xl sm:text-3xl text-gray-800 dark:text-gray-200 mb-0.5 sm:mb-1">{estadisticas.desactivados}</p>
-                  <p className="text-xs text-gray-700/80 dark:text-gray-300/80">Desactivados</p>
+            <Card className="border-0 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/40 dark:to-orange-800/40 shadow-md">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col items-center justify-center gap-1.5 sm:gap-2">
+                  <Ban className="h-7 w-7 sm:h-9 sm:w-9 text-orange-700 dark:text-orange-300" />
+                  <div className="text-center">
+                    <p className="text-2xl sm:text-3xl text-orange-800 dark:text-orange-200 mb-0.5 sm:mb-1">{estadisticas.suspendidos}</p>
+                    <p className="text-xs text-orange-700/80 dark:text-orange-300/80">Suspendidos</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </Card>
+          
+            <Card className="border-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/40 dark:to-gray-700/40 shadow-md">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col items-center justify-center gap-1.5 sm:gap-2">
+                  <UserX className="h-7 w-7 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300" />
+                  <div className="text-center">
+                    <p className="text-2xl sm:text-3xl text-gray-800 dark:text-gray-200 mb-0.5 sm:mb-1">{estadisticas.desactivados}</p>
+                    <p className="text-xs text-gray-700/80 dark:text-gray-300/80">Desactivados</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
         </div>
       </div>
 
