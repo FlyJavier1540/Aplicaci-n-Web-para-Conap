@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense, memo, useMemo, useEffect } from 'react';
 import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
+import { BackendStatus } from './components/BackendStatus';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarTrigger, useSidebar } from './components/ui/sidebar';
 import { Button } from './components/ui/button';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -46,7 +47,7 @@ const ReporteHallazgos = lazy(() => import('./components/ReporteHallazgos').then
 const SeguimientoCumplimiento = lazy(() => import('./components/SeguimientoCumplimiento').then(m => ({ default: m.SeguimientoCumplimiento })));
 const RegistroIncidentes = lazy(() => import('./components/RegistroIncidentes').then(m => ({ default: m.RegistroIncidentes })));
 const ReportesPeriodicos = lazy(() => import('./components/ReportesPeriodicos').then(m => ({ default: m.ReportesPeriodicos })));
-const GestionUsuarios = lazy(() => import('./components/GestionUsuariosAPI').then(m => ({ default: m.GestionUsuariosAPI })));
+const GestionUsuarios = lazy(() => import('./components/GestionUsuarios').then(m => ({ default: m.GestionUsuarios })));
 
 /**
  * =============================================
@@ -539,6 +540,7 @@ export default function App() {
     return (
       <ThemeProvider defaultTheme="system" storageKey="conap-theme">
         <Login onLogin={setCurrentUser} />
+        <BackendStatus />
       </ThemeProvider>
     );
   }
@@ -548,6 +550,7 @@ export default function App() {
       <SidebarProvider defaultOpen={false}>
         <AppContent currentUser={currentUser} setCurrentUser={setCurrentUser} />
       </SidebarProvider>
+      <BackendStatus />
     </ThemeProvider>
   );
 }

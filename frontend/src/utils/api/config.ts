@@ -7,7 +7,20 @@
  * URL base de la API del backend
  * En producción, cambiar a la URL del servidor real
  */
-export const API_BASE_URL = 'http://localhost:3002/api';
+export const API_BASE_URL = 
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || 
+  'http://localhost:3002/api';
+
+// Log de configuración en desarrollo
+if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+  console.log('🔧 Configuración API:');
+  console.log('   Base URL:', API_BASE_URL);
+  console.log('   Modo:', import.meta.env.MODE);
+  console.log('');
+  console.log('⚠️  IMPORTANTE: Asegúrate que el backend esté corriendo en http://localhost:3002');
+  console.log('   Ejecuta: cd backend-guardarrecursos && npm start');
+  console.log('');
+}
 
 /**
  * Timeout de las peticiones (en milisegundos)

@@ -46,6 +46,24 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
+    // Error de red (backend no disponible)
+    if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
+      console.error('❌ ERROR DE CONEXIÓN:');
+      console.error('   El backend NO está disponible en:', API_BASE_URL);
+      console.error('');
+      console.error('   SOLUCIONES:');
+      console.error('   1. Verifica que el backend esté corriendo:');
+      console.error('      Terminal → cd backend-guardarrecursos');
+      console.error('      Terminal → npm start');
+      console.error('');
+      console.error('   2. Verifica que el puerto sea correcto (3002)');
+      console.error('');
+      console.error('   3. Prueba abrir en el navegador:');
+      console.error('      http://localhost:3002/api/catalogos/roles');
+      console.error('      (Debe mostrar JSON, no error)');
+      console.error('');
+    }
+
     // Manejo de errores de autenticación
     if (error.response?.status === 401 || error.response?.status === 403) {
       // Token inválido o expirado - limpiar sesión
